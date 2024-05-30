@@ -4,10 +4,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { RiAddLargeFill } from "react-icons/ri";
-import { BsBox } from "react-icons/bs";
 import Modal from "../../component/ModalShared";
 import { useRef, useState } from "react";
-import ItemEvent from "~/component/calendar/ItemEvent";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import CalendarForm from "~/component/calendar/CalendarShared";
 import { api } from "~/utils/api";
@@ -34,11 +32,6 @@ const Calendario: NextPage = () => {
   dayjs.locale("es");
   const localizer = dayjsLocalizer(dayjs);
 
-  interface Event {
-    title: string;
-    start: Date;
-    end: Date;
-  }
 
   const myEvent = [
     {
@@ -80,7 +73,6 @@ const Calendario: NextPage = () => {
   return (
     <>
       <Modal showModal={showModal} size={"200px"} onClose={onCloseModal}>
-        {/* <ItemEvent/> */}
         <CalendarForm />
       </Modal>
       <div className="mx-auto flex w-full flex-col items-center justify-center bg-slate-100 pt-8">
@@ -123,26 +115,6 @@ const Calendario: NextPage = () => {
               </h3>
         ))}
         </div> 
-
-        {/* <Calendar
-          localizer={localizer}
-          events={eventosMappping}
-          views={["month", "week", "day"]}
-          startAccessor="start"
-          endAccessor="end"
-          messages={{
-            next: "sig",
-            previous: "ant",
-            today: "Hoy",
-            month: "Mes",
-            week: "Semana",
-            day: "Día",
-          }}
-          style={{
-            height: 450,
-            width: 1000,
-          }}
-        /> */}
       </div>
     </>
   );
