@@ -5,13 +5,14 @@ import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { RiAddLargeFill } from "react-icons/ri";
 import Modal from "../../component/ModalShared";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import CalendarForm from "~/component/calendar/CalendarShared";
 import { api } from "~/utils/api";
 
 const Calendario: NextPage = () => {
   const createCalendar = api.calendar.createCalendarEvent.useMutation({});
+
   const getAllCalendar = api.calendar.getAllEventCalendar.useQuery();
 
    const response = getAllCalendar.data?.data.items; 
@@ -36,8 +37,8 @@ const Calendario: NextPage = () => {
   const myEvent = [
     {
       title: "Evento coliseo",
-      start: dayjs("2024-05-13T08:00:00").toDate(),
-      end: dayjs("2024-05-13T12:00:00").toDate(),
+      start: dayjs("2024-05-16T08:00:00").toDate(),
+      end: dayjs("2024-05-16T12:00:00").toDate(),
     },
   ];
 
