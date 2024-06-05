@@ -15,7 +15,7 @@ const Calendario: NextPage = () => {
 
   const getAllCalendar = api.calendar.getAllEventCalendar.useQuery();
 
-   const response = getAllCalendar.data?.data.items; 
+  const response = getAllCalendar.data?.data.items;
 
   const eventosMappping = response?.map((item) => {
     const start = item.start?.dateTime ? new Date(item.start.dateTime) : null;
@@ -27,12 +27,11 @@ const Calendario: NextPage = () => {
     };
   });
 
-  console.log("lista de calendarios=>", eventosMappping); 
+  console.log("lista de calendarios=>", eventosMappping);
 
   const [showModal, setShowModal] = useState(false);
   dayjs.locale("es");
   const localizer = dayjsLocalizer(dayjs);
-
 
   const myEvent = [
     {
@@ -47,7 +46,8 @@ const Calendario: NextPage = () => {
   const updateCalendar = () => {
     const iframe = calendarIframeRef.current;
     if (iframe) {
-      iframe.src = "https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&showTitle=0&showPrint=0&hl=es&src=cHJ1ZWJhamVhbjU4QGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%2333B679";
+      iframe.src =
+        "https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&showTitle=0&showPrint=0&hl=es&src=cHJ1ZWJhamVhbjU4QGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%2333B679";
     }
   };
 
@@ -60,7 +60,7 @@ const Calendario: NextPage = () => {
       const eventData = {
         title: event.title,
         startTime: event.start,
-        endTime: event.end,        
+        endTime: event.end,
       };
 
       createCalendar.mutateAsync(eventData);
@@ -99,6 +99,25 @@ const Calendario: NextPage = () => {
             </button>
           </div>
         </div>
+        <Calendar
+          localizer={localizer}
+          events={eventosMappping}
+          views={["month", "week", "day"]}
+          startAccessor="start"
+          endAccessor="end"
+          messages={{
+            next: "sig",
+            previous: "ant",
+            today: "Hoy",
+            month: "Mes",
+            week: "Semana",
+            day: "Día",
+          }}
+          style={{
+            height: 450,
+            width: 1000,
+          }}
+        />
 
         <div className="h-480 w-1020 m-auto flex bg-white p-5 shadow-2xl">
           <iframe
@@ -106,16 +125,16 @@ const Calendario: NextPage = () => {
             src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&showTitle=0&showPrint=0&hl=es&src=cHJ1ZWJhamVhbjU4QGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%2333B679"
             width="1000"
             height="400"
-            scrolling="no"            
+            scrolling="no"
           ></iframe>
         </div>
-        <div className="flex w-full justify-center mt-4 text-gray-700">
-        {eventosMappping?.map((event,index)=>( 
-            <h3 className="pr-3" key={index}> 
-            {event.title};
-              </h3>
-        ))}
-        </div> 
+        <div className="mt-4 flex w-full justify-center text-gray-700">
+          {eventosMappping?.map((event, index) => (
+            <h3 className="pr-3" key={index}>
+              {event.title};
+            </h3>
+          ))}
+        </div>
       </div>
     </>
   );

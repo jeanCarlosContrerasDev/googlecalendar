@@ -1,8 +1,3 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/2Bt72djBEVk
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
@@ -13,27 +8,26 @@ export default function Component() {
 
   const handleSubmit = () => {
     setCount(count + 1);
-    console.log(count + 1);
   };
 
-  const Time=()=>{
-    return(
-        <div>
+  const Time = () => {
+    return (
+      <div>
         <div className="flex w-full justify-between text-slate-500">
-        <IoMdArrowBack />
-        <h2 className="text-md mb-4   font-semibold ">
-          Módulo de introducción
-        </h2>
-        <h2 className="text-sm">X</h2>
-      </div>
+          <IoMdArrowBack />
+          <h2 className="text-md mb-4   font-semibold ">
+            Módulo de introducción
+          </h2>
+          <h2 className="text-sm">X</h2>
         </div>
-    )
-  }
+      </div>
+    );
+  };
 
-  const Informations=()=>{
-    return(
-        <div>
-              <div className="flex w-full items-center justify-center py-8">
+  const Informations = () => {
+    return (
+      <div>
+        <div className="flex w-full items-center justify-center py-8">
           <div className="flex w-full max-w-2xl">
             <div className="flex w-1/2 flex-col justify-between rounded-lg  border-r bg-[#E4F1FA] px-6 py-8">
               <div className="mb-4 flex items-center">
@@ -121,7 +115,7 @@ export default function Component() {
               <div className="flex h-full flex-col  space-y-4">
                 {count === 1 ? (
                   <div className="text-sm">
-                    <h2 className="font-bold text-gray-800 mb-4">
+                    <h2 className="mb-4 font-bold text-gray-800">
                       1. ¿Qué Quieres Lograr con Este Programa?
                     </h2>
                     <p className="text-xs text-gray-600">
@@ -137,7 +131,7 @@ export default function Component() {
                 ) : (
                   <div className="flex h-full flex-col justify-between">
                     <div>
-                      <h2 className="font-bold text-gray-800 mb-4">
+                      <h2 className="mb-4 font-bold text-gray-800">
                         ¿Cuales son tus Expectativas del Programa?
                       </h2>
                       <p className="mb-4 text-xs text-gray-600">
@@ -149,8 +143,10 @@ export default function Component() {
                         oportunidad.
                       </p>
                     </div>
-                    <Textarea /> 
-                    <span className="text-gray-400 text-xs mt-2">Máx 360 caracteres</span>
+                    <Textarea />
+                    <span className="mt-2 text-xs text-gray-400">
+                      Máx 360 caracteres
+                    </span>
                   </div>
                 )}
 
@@ -164,16 +160,15 @@ export default function Component() {
             </div>
           </div>
         </div>
-        </div>
-    )
-  }
-
+      </div>
+    );
+  };
 
   return (
     <div className="my-auto flex h-screen w-full flex-col items-center justify-center bg-slate-200">
-      <div className=" w-80% bg-white px-10 py-6 rounded-lg">
-        <Time/>
-        <Informations/>
+      <div className=" w-80% rounded-lg bg-white px-10 py-6">
+        <Time />
+        <Informations />
       </div>
     </div>
   );
