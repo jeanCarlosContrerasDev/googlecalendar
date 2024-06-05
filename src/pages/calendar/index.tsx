@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import CalendarForm from "~/component/calendar/CalendarShared";
 import { api } from "~/utils/api";
+import ReactBigCalendar from "~/component/ReactBigCalendar/ReactBigCalendar"
 
 const Calendario: NextPage = () => {
   const createCalendar = api.calendar.createCalendarEvent.useMutation({});
@@ -17,15 +18,25 @@ const Calendario: NextPage = () => {
 
   const response = getAllCalendar.data?.data.items;
 
-  const eventosMappping = response?.map((item) => {
+  const eventosMappping = response?.map((item,index) => {
     const start = item.start?.dateTime ? new Date(item.start.dateTime) : null;
     const end = item.end?.dateTime ? new Date(item.end.dateTime) : null;
     return {
+      id: index, // Usamos el índice como ID temporalmente
       title: item.summary,
-      start: start,
-      end: end,
+      allDay: !start || !end, // Si no hay start o end, se considera un evento de todo el día
+      start: start || new Date(), // Usamos una fecha actual si no hay start
+      end: end || new Date(), // Usamos una fecha actual si no hay end
     };
   });
+
+  // {
+  //   id: 0,
+  //   title: "All Day Event very long title",
+  //   allDay: true,
+  //   start: new Date(2015, 3, 0),
+  //   end: new Date(2015, 3, 1)
+  // },
 
   console.log("lista de calendarios=>", eventosMappping);
 
@@ -35,9 +46,9 @@ const Calendario: NextPage = () => {
 
   const myEvent = [
     {
-      title: "Evento coliseo",
-      start: dayjs("2024-05-16T08:00:00").toDate(),
-      end: dayjs("2024-05-16T12:00:00").toDate(),
+      title: "Conferencia Iglesia",
+      start: dayjs("2024-06-05T08:00:00").toDate(),
+      end: dayjs("2024-06-05T12:00:00").toDate(),
     },
   ];
 
@@ -99,7 +110,11 @@ const Calendario: NextPage = () => {
             </button>
           </div>
         </div>
-        <Calendar
+        <div className="h-480 w-1020 m-auto flex flex-col bg-white p-5 shadow-2xl">
+
+          <ReactBigCalendar evento={eventosMappping}/>
+
+        {/* <Calendar
           localizer={localizer}
           events={eventosMappping}
           views={["month", "week", "day"]}
@@ -117,9 +132,10 @@ const Calendario: NextPage = () => {
             height: 450,
             width: 1000,
           }}
-        />
+        /> */}
+        </div>
 
-        <div className="h-480 w-1020 m-auto flex bg-white p-5 shadow-2xl">
+        {/* <div className="h-480 w-1020 m-auto flex bg-white p-5 shadow-2xl">
           <iframe
             ref={calendarIframeRef}
             src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&showTitle=0&showPrint=0&hl=es&src=cHJ1ZWJhamVhbjU4QGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%2333B679"
@@ -127,14 +143,16 @@ const Calendario: NextPage = () => {
             height="400"
             scrolling="no"
           ></iframe>
-        </div>
-        <div className="mt-4 flex w-full justify-center text-gray-700">
+        </div> */}
+
+        {/* <div className="mt-4 flex w-full justify-center text-gray-700">
           {eventosMappping?.map((event, index) => (
             <h3 className="pr-3" key={index}>
               {event.title};
             </h3>
           ))}
-        </div>
+        </div> */}
+
       </div>
     </>
   );
