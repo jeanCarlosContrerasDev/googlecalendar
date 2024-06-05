@@ -6,21 +6,32 @@ import {
 import { google } from "googleapis";
 import { z } from "zod";
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-);
+// const oauth2Client = new google.auth.OAuth2(
+//   "1009735315859-14et33k43nercj155g0j4mrp4293l09s.apps.googleusercontent.com",
+//   "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",
+// );
 
-oauth2Client.setCredentials({
-  refresh_token: process.env.REFRESH_TOKEN,
-});
+// oauth2Client.setCredentials({
+//   refresh_token:"1//048HlgKPtV1j6CgYIARAAGAQSNwF-L9Ir5P_tVxyV5U0FeYqSOyAAxWMQKWyH7FoFGO9cVg9JYtYVcgJPj7Id_U4K0xSy2giXAjQ",
+// });
 
 export const calendarRouter = createTRPCRouter({
+
   getAllEventCalendar: protectedProcedure.query((ctx) => {
+
+    const oauth2Client = new google.auth.OAuth2(
+      "1009735315859-14et33k43nercj155g0j4mrp4293l09s.apps.googleusercontent.com",      
+      "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",
+    );
+    
+    oauth2Client.setCredentials({
+      refresh_token:"1//04-BmGdHIZtW_CgYIARAAGAQSNwF-L9IrviefkMuuVMhm7UiNVj8-cJ030DPSsCTMrZFBJQZjgOfLclJz1XinoeNcz1G9x0VZiIo",
+    });
+    
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
     const fechaInicio = new Date("2024-05-14T00:00:00Z");
-    const fechaFin = new Date("2024-05-30T23:59:59Z");
+    const fechaFin = new Date("2024-07-30T23:59:59Z");
 
     const getAllCalendar = calendar.events.list({
       calendarId: "primary",
@@ -51,6 +62,15 @@ export const calendarRouter = createTRPCRouter({
         // // Verificar si se encuentra el token de acceso en la cuenta
         // const accessToken = account?.access_token;
 
+        const oauth2Client = new google.auth.OAuth2(
+          "1009735315859-14et33k43nercj155g0j4mrp4293l09s.apps.googleusercontent.com",      
+          "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",
+        );
+        
+        oauth2Client.setCredentials({
+          refresh_token:"1//04-BmGdHIZtW_CgYIARAAGAQSNwF-L9IrviefkMuuVMhm7UiNVj8-cJ030DPSsCTMrZFBJQZjgOfLclJz1XinoeNcz1G9x0VZiIo",
+        });
+
         const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
         const startTimeISO = input.startTime.toISOString();
@@ -66,6 +86,7 @@ export const calendarRouter = createTRPCRouter({
           calendarId: "primary",
           requestBody: event,
         });
+        
 
         console.log("Evento creado:", response.data);
 
