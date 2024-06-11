@@ -1,91 +1,123 @@
 import { NextPage } from "next";
-import { Calendar, dayjsLocalizer } from "react-big-calendar";
+import {dayjsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { RiAddLargeFill } from "react-icons/ri";
 import Modal from "../../component/ModalShared";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import CalendarForm from "~/component/calendar/CalendarShared";
 import { api } from "~/utils/api";
-import ReactBigCalendar from "~/component/ReactBigCalendar/ReactBigCalendar"
+import ReactBigCalendar from "~/component/ReactBigCalendar/ReactBigCalendar";
+import { addDays, format, parse, setDay } from "date-fns";
+import { es } from "date-fns/locale";
 
 const Calendario: NextPage = () => {
   const createCalendar = api.calendar.createCalendarEvent.useMutation({});
-
   const getAllCalendar = api.calendar.getAllEventCalendar.useQuery();
-
   const response = getAllCalendar.data?.data.items;
+  const [currentDate, setCurrentDay] = useState(new Date());
+  const [showModal, setShowModal] = useState(false);
 
-  const eventosMappping = response?.map((item,index) => {
+  dayjs.locale("es"); 
+
+  const eventosMappping = response?.map((item, index) => {
     const start = item.start?.dateTime ? new Date(item.start.dateTime) : null;
     const end = item.end?.dateTime ? new Date(item.end.dateTime) : null;
     return {
-      id: index, // Usamos el índice como ID temporalmente
+      id: index,
       title: item.summary,
-      allDay: !start || !end, // Si no hay start o end, se considera un evento de todo el día
-      start: start || new Date(), // Usamos una fecha actual si no hay start
-      end: end || new Date(), // Usamos una fecha actual si no hay end
+      allDay: !start || !end,
+      start: start || new Date(),
+      end: end || new Date(),
     };
   });
 
-  // {
-  //   id: 0,
-  //   title: "All Day Event very long title",
-  //   allDay: true,
-  //   start: new Date(2015, 3, 0),
-  //   end: new Date(2015, 3, 1)
-  // },
-
   console.log("lista de calendarios=>", eventosMappping);
-
-  const [showModal, setShowModal] = useState(false);
-  dayjs.locale("es");
-  const localizer = dayjsLocalizer(dayjs);
-
-  const myEvent = [
-    {
-      title: "Conferencia Iglesia",
-      start: dayjs("2024-06-05T08:00:00").toDate(),
-      end: dayjs("2024-06-05T12:00:00").toDate(),
-    },
-  ];
-
-  const calendarIframeRef = useRef<HTMLIFrameElement>(null);
-
-  const updateCalendar = () => {
-    const iframe = calendarIframeRef.current;
-    if (iframe) {
-      iframe.src =
-        "https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&showTitle=0&showPrint=0&hl=es&src=cHJ1ZWJhamVhbjU4QGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%2333B679";
-    }
-  };
 
   const onCloseModal = () => setShowModal(false);
 
   const handleSubmit = () => {
-    const event = myEvent ? myEvent[0] : null;
-
-    if (event) {
-      const eventData = {
-        title: event.title,
-        startTime: event.start,
-        endTime: event.end,
-      };
-
-      createCalendar.mutateAsync(eventData);
-      updateCalendar();
-    } else {
-      console.error("No hay eventos disponibles para enviar.");
-    }
     setShowModal(!showModal);
+  };
+
+  const captureEvent = (event: any) => {
+    const data = calculateNextWorkoutDays(currentDate, event);
+
+    const parsedDatesArray = data.map((element) => {
+      const originalFormat = "EEEE, dd MMMM yyyy";
+      const dateString = element.nextWeek;
+      const parsedDate = parse(dateString, originalFormat, new Date(), {
+        locale: es,
+      });
+      return parsedDate;
+    });
+
+    const isoDateList = parsedDatesArray.map((item: any) =>
+      format(item, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+    );
+
+    isoDateList.forEach(
+      (element: string | number | Date | dayjs.Dayjs | null | undefined) => {
+        const myEvent = [
+          {
+            title: event.activityName,
+            start: dayjs(element).toDate(),
+            end: dayjs(element).toDate(),
+          },
+        ];
+
+        const evento = myEvent ? myEvent[0] : null;
+        if (evento) {
+          const eventData = {
+            title: evento.title,
+            startTime: evento.start,
+            endTime: evento.end,
+          };
+          try {
+            createCalendar.mutateAsync(eventData);
+          console.log("registro evento exitoso")
+          } catch (error) {
+            console.log("error al registrar evento")
+          }
+        } else {
+          console.error("No hay eventos disponibles para enviar.");
+        }
+      },
+    );
+  };
+
+  const calculateNextWorkoutDays = (currentDate: Date, event: string[]) => {
+    const daysOfWeek = ["7", "1", "2", "3", "4", "5", "6"];
+    const nextWorkoutDates = event.dates
+      .map((day: string) => {
+        console.log("dia=>", day);
+        const dayNumber = daysOfWeek.indexOf(day.id);
+
+        const nextWorkoutDate = setDay(
+          currentDate,
+          dayNumber === 0 ? 7 : dayNumber,
+        );
+        const nextWeekWorkoutDate = addDays(nextWorkoutDate, 7);
+        return {
+          thisWeek: format(nextWorkoutDate, "eeee, dd MMMM yyyy", {
+            locale: es,
+          }),
+          nextWeek: format(nextWeekWorkoutDate, "eeee, dd MMMM yyyy", {
+            locale: es,
+          }),
+        };
+      })
+      .filter((date: null) => date !== null);
+
+    return nextWorkoutDates;
   };
 
   return (
     <>
       <Modal showModal={showModal} size={"200px"} onClose={onCloseModal}>
-        <CalendarForm />
+        <CalendarForm captureEvent={captureEvent} />
       </Modal>
       <div className="mx-auto flex w-full flex-col items-center justify-center bg-slate-100 pt-8">
         <div className="mb-4 flex w-[80%]  justify-between px-11">
@@ -111,48 +143,8 @@ const Calendario: NextPage = () => {
           </div>
         </div>
         <div className="h-480 w-1020 m-auto flex flex-col bg-white p-5 shadow-2xl">
-
-          <ReactBigCalendar evento={eventosMappping}/>
-
-        {/* <Calendar
-          localizer={localizer}
-          events={eventosMappping}
-          views={["month", "week", "day"]}
-          startAccessor="start"
-          endAccessor="end"
-          messages={{
-            next: "sig",
-            previous: "ant",
-            today: "Hoy",
-            month: "Mes",
-            week: "Semana",
-            day: "Día",
-          }}
-          style={{
-            height: 450,
-            width: 1000,
-          }}
-        /> */}
+          <ReactBigCalendar evento={eventosMappping} />
         </div>
-
-        {/* <div className="h-480 w-1020 m-auto flex bg-white p-5 shadow-2xl">
-          <iframe
-            ref={calendarIframeRef}
-            src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&showTitle=0&showPrint=0&hl=es&src=cHJ1ZWJhamVhbjU4QGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%2333B679"
-            width="1000"
-            height="400"
-            scrolling="no"
-          ></iframe>
-        </div> */}
-
-        {/* <div className="mt-4 flex w-full justify-center text-gray-700">
-          {eventosMappping?.map((event, index) => (
-            <h3 className="pr-3" key={index}>
-              {event.title};
-            </h3>
-          ))}
-        </div> */}
-
       </div>
     </>
   );

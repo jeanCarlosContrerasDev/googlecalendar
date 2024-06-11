@@ -37,6 +37,6 @@
     "**/*.cjs",
     "**/*.js",
     ".next/types/**/*.ts"
-  ],
+, "src/component/ReactBigCalendar/ReactBigCalendar.jsx"  ],
   "exclude": ["node_modules"]
 }

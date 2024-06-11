@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import events from "./events";
+
 import "react-big-calendar/lib/css/react-big-calendar.css";
+
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
@@ -11,11 +12,15 @@ const localizer = momentLocalizer(moment);
 export default function ReactBigCalendar({evento}) {
   const [eventsData, setEventsData] = useState(evento);
 
+  useEffect(()=>{
+    setEventsData(evento);
+  },[evento])
+
   // @ts-ignore
   const handleSelect = ({ start, end }) => {
     console.log(start);
     console.log(end);
-    const title = window.prompt("New Event name");
+    const title = window.prompt("Nombre del evento");
     if (title)
       setEventsData([
         // @ts-ignore

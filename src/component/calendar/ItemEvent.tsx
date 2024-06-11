@@ -15,6 +15,7 @@ const ItemEvent: NextPage = () => {
           Crear Evento
         </h1>
       </div>
+      
 
       <div className="col-span-2">
         <label htmlFor="id" className="text-sm text-gray-500">
