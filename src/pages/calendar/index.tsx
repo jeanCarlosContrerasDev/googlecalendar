@@ -1,17 +1,17 @@
 import { NextPage } from "next";
-import {dayjsLocalizer } from "react-big-calendar";
+import { dayjsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { RiAddLargeFill } from "react-icons/ri";
-import Modal from "../../component/ModalShared";
 import { useRef, useState } from "react";
 import { IoCalendarNumberOutline } from "react-icons/io5";
-import CalendarForm from "~/component/calendar/CalendarShared";
 import { api } from "~/utils/api";
 import ReactBigCalendar from "~/component/ReactBigCalendar/ReactBigCalendar";
 import { addDays, format, parse, setDay } from "date-fns";
 import { es } from "date-fns/locale";
+import ModalShared from "~/component/ModalShared";
+import CalendarForm from "~/component/calendar/CalendarShared";
 
 const Calendario: NextPage = () => {
   const createCalendar = api.calendar.createCalendarEvent.useMutation({});
@@ -19,19 +19,29 @@ const Calendario: NextPage = () => {
   const response = getAllCalendar.data?.data.items;
   const [currentDate, setCurrentDay] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
+  const [update,setUpdate]=useState(false)
 
-  dayjs.locale("es"); 
-
+  dayjs.locale("es");
+  
   const eventosMappping = response?.map((item, index) => {
-    const start = item.start?.dateTime ? new Date(item.start.dateTime) : null;
-    const end = item.end?.dateTime ? new Date(item.end.dateTime) : null;
-    return {
-      id: index,
-      title: item.summary,
-      allDay: !start || !end,
-      start: start || new Date(),
-      end: end || new Date(),
-    };
+    let start = null;
+    let end = null;
+
+    if (item.start?.dateTime && item.end?.dateTime) {
+      start = new Date(item.start.dateTime);
+      end = new Date(item.end.dateTime);
+        
+      return {
+        id: item.id,
+        title: item.summary,
+        start: start ,
+        end: end 
+      };
+
+    }else{
+       console.log("error en las fechas del evento")
+    } 
+  
   });
 
   console.log("lista de calendarios=>", eventosMappping);
@@ -42,17 +52,28 @@ const Calendario: NextPage = () => {
     setShowModal(!showModal);
   };
 
-  const captureEvent = (event: any) => {
-    const data = calculateNextWorkoutDays(currentDate, event);
+  interface EventData {
+    activityName: string;
+    rootGoal: string;
+    weeklyfrequency: string;
+    description: string;
+    dates: EventData[];
+  }
 
-    const parsedDatesArray = data.map((element) => {
-      const originalFormat = "EEEE, dd MMMM yyyy";
-      const dateString = element.nextWeek;
-      const parsedDate = parse(dateString, originalFormat, new Date(), {
-        locale: es,
+  const captureEvent = (event: EventData) => {
+    const data = calculateNextWorkoutDays(currentDate, event);
+    let parsedDatesArray: Date[] = [];
+    console.log("Evento capturado",event)
+    if(data){
+       parsedDatesArray = data.map((element:any) => {
+        const originalFormat = "EEEE, dd MMMM yyyy";
+        const dateString = element.nextWeek;
+        const parsedDate = parse(dateString, originalFormat, new Date(), {
+          locale: es,
+        });
+        return parsedDate;
       });
-      return parsedDate;
-    });
+    }
 
     const isoDateList = parsedDatesArray.map((item: any) =>
       format(item, "yyyy-MM-dd'T'HH:mm:ssxxx"),
@@ -60,6 +81,7 @@ const Calendario: NextPage = () => {
 
     isoDateList.forEach(
       (element: string | number | Date | dayjs.Dayjs | null | undefined) => {
+        
         const myEvent = [
           {
             title: event.activityName,
@@ -68,6 +90,7 @@ const Calendario: NextPage = () => {
           },
         ];
 
+        //creo el modelo evento google calendar
         const evento = myEvent ? myEvent[0] : null;
         if (evento) {
           const eventData = {
@@ -75,11 +98,21 @@ const Calendario: NextPage = () => {
             startTime: evento.start,
             endTime: evento.end,
           };
+
+          //modelo de evento para guardar en base de datos
+          const eventDataSupabase = {
+            title: evento.title,
+            startTime: evento.start,
+            endTime: evento.end,
+            rootGoal:event.rootGoal,
+            weeklyfrequency:event.weeklyfrequency,
+            description:event.description
+          };
           try {
             createCalendar.mutateAsync(eventData);
-          console.log("registro evento exitoso")
+            console.log("registro evento exitoso");
           } catch (error) {
-            console.log("error al registrar evento")
+            console.log("error al registrar evento");
           }
         } else {
           console.error("No hay eventos disponibles para enviar.");
@@ -88,37 +121,46 @@ const Calendario: NextPage = () => {
     );
   };
 
-  const calculateNextWorkoutDays = (currentDate: Date, event: string[]) => {
+  const calculateNextWorkoutDays = (currentDate: Date, event: EventData) => {
     const daysOfWeek = ["7", "1", "2", "3", "4", "5", "6"];
-    const nextWorkoutDates = event.dates
-      .map((day: string) => {
-        console.log("dia=>", day);
-        const dayNumber = daysOfWeek.indexOf(day.id);
+    let nextWorkoutDates: { thisWeek: string; nextWeek: string; }[];
 
-        const nextWorkoutDate = setDay(
-          currentDate,
-          dayNumber === 0 ? 7 : dayNumber,
-        );
-        const nextWeekWorkoutDate = addDays(nextWorkoutDate, 7);
-        return {
-          thisWeek: format(nextWorkoutDate, "eeee, dd MMMM yyyy", {
-            locale: es,
-          }),
-          nextWeek: format(nextWeekWorkoutDate, "eeee, dd MMMM yyyy", {
-            locale: es,
-          }),
-        };
-      })
-      .filter((date: null) => date !== null);
+    if(event.dates){
+       nextWorkoutDates = event.dates.map((day: any) => {
+          console.log("dia=>", day);
+          const dayNumber = daysOfWeek.indexOf(day.id);
+  
+          const nextWorkoutDate = setDay(
+            currentDate,
+            dayNumber === 0 ? 7 : dayNumber,
+          );
+          const nextWeekWorkoutDate = addDays(nextWorkoutDate, 7);
+          return {
+            thisWeek: format(nextWorkoutDate, "eeee, dd MMMM yyyy", {
+              locale: es,
+            }),
+            nextWeek: format(nextWeekWorkoutDate, "eeee, dd MMMM yyyy", {
+              locale: es,
+            }),
+          };
+        })       
+    }else{
+      console.log("El evento no tiene información sobre fechas de entrenamiento");
+      nextWorkoutDates = [];
+    }
 
     return nextWorkoutDates;
   };
 
+  const listenUpdate = (): void => {
+   setUpdate(!update)
+  };
+
   return (
     <>
-      <Modal showModal={showModal} size={"200px"} onClose={onCloseModal}>
+      <ModalShared showModal={showModal} size={"400px"} onClose={onCloseModal}>
         <CalendarForm captureEvent={captureEvent} />
-      </Modal>
+      </ModalShared>
       <div className="mx-auto flex w-full flex-col items-center justify-center bg-slate-100 pt-8">
         <div className="mb-4 flex w-[80%]  justify-between px-11">
           <div>
@@ -143,7 +185,7 @@ const Calendario: NextPage = () => {
           </div>
         </div>
         <div className="h-480 w-1020 m-auto flex flex-col bg-white p-5 shadow-2xl">
-          <ReactBigCalendar evento={eventosMappping} />
+          <ReactBigCalendar evento={eventosMappping} listenUpdate={listenUpdate} />
         </div>
       </div>
     </>

@@ -1,7 +1,7 @@
 // Import necessary dependencies
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 // Define the schema for form validation
 const FormSchema = z.object({
@@ -19,10 +19,25 @@ interface Day {
   value: string;
 }
 
-export default function CalendarForm({ captureEvent }: { captureEvent: (data: any) => void }) {
+export default function CalendarUpdateForm({captureEvent,data,}: { captureEvent: (data: any) => void; data: any;
+}) 
+{
   const [selectDay, setSelectDay] = useState<Day[]>([]);
 
-  // UseForm hook for form handling
+  const date = new Date(data.start);
+
+  const daysOfWeek = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miércoles",
+    "jueves",
+    "viernes",
+    "sábado",   
+  ];
+
+  const dayOfWeek = daysOfWeek[date.getDay()];
+
   const {
     register,
     handleSubmit,
@@ -30,19 +45,24 @@ export default function CalendarForm({ captureEvent }: { captureEvent: (data: an
     reset,
     setValue,
   } = useForm();
-
-  const [event, setEvent] = useState<any>();
-
- 
+  
+  useEffect(() => {
+    setValue("activityName", data.title);
+    setValue("rootGoal", data.end);
+    const selectedDay = weekdays.find((day) => day.name === dayOfWeek);
+    if (selectedDay) {
+      setSelectDay([selectedDay]);
+    }
+  }, [data]);
 
   const weekdays = [
-    { id: "1", value: "L" },
-    { id: "2", value: "M" },
-    { id: "3", value: "M" },
-    { id: "4", value: "J" },
-    { id: "5", value: "V" },
-    { id: "6", value: "S" },
-    { id: "7", value: "D" },
+    { id: "1", value: "L", name: "lunes" },
+    { id: "2", value: "M", name: "martes" },
+    { id: "3", value: "M", name: "miércoles" },
+    { id: "4", value: "J", name: "jueves" },
+    { id: "5", value: "V", name: "viernes" },
+    { id: "6", value: "S", name: "sábado" },
+    { id: "7", value: "D", name: "domingo" },
   ];
 
   const handleSubmitt = (item: Day) => {
@@ -72,19 +92,20 @@ export default function CalendarForm({ captureEvent }: { captureEvent: (data: an
     );
   };
 
-  const onsubmit = handleSubmit((data) => {
-    console.log("datos del forulario", data);
+  const onsubmit = handleSubmit((item) => {
+    console.log("datos del forulario", item,data.id);
     captureEvent({
-      ...data,
+      ...item,
       dates: selectDay,
+      idEvent:data.id
     });
     reset(); // Reset form after submission
   });
 
   return (
-    <div className="modal-overlay grid h-[70%] w-[800px] grid-cols-2 items-center justify-center gap-12 p-4">
-      <div className="modal-overlay col-span-1 w-full space-y-2 pr-4">
-        <h2 className="modal-overlay text-md font-bold">Crear actividad</h2>
+    <div className="modal-overlay grid  w-[400px] items-center justify-center gap-12 p-4">
+      <div className="modal-overlay col-span-2 w-full space-y-2 pr-4">
+        <h2 className="modal-overlay text-md font-bold">Actualizar evento</h2>
         <p className="modal-overlay text-xs text-gray-400">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quo
           corrupti voluptatibus quod expedita.
@@ -109,21 +130,7 @@ export default function CalendarForm({ captureEvent }: { captureEvent: (data: an
               </span>
             )}
           </div>
-          <div className="modal-overlay col-span-2 ">
-            <label htmlFor="id" className="text-sm font-bold text-black">
-              Meta raiz
-            </label>
-            <input
-              {...register("rootGoal", { required: true })}
-              type="text"
-              className="modal-overlay focus:ring-tremor-content-background  h-9 w-full appearance-none rounded-md pl-4 ring-1   ring-gray-200 transition duration-200 focus:outline-none focus:ring-2"
-            />
-            {errors.rootGoal && (
-              <span className="text-xs text-red-700">
-                * Este campo es obligatorio.
-              </span>
-            )}
-          </div>
+
           <div className="modal-overlay col-span-2 ">
             <label htmlFor="id" className="text-sm font-bold text-black">
               Duracion
@@ -167,15 +174,6 @@ export default function CalendarForm({ captureEvent }: { captureEvent: (data: an
             Guardar
           </button>
         </form>
-      </div>
-      <div className="modal-overlay h-full rounded-xl">
-        <div className="modal-overlay relative h-[88%] w-full">
-          <img
-            src="https://www.debate.com.mx/__export/1677624300717/sites/debate/img/2023/02/28/deportes_extremos.jpg_242310155.jpg"
-            alt=""
-            className="modal-overlay h-full w-full rounded-xl object-cover"
-          />
-        </div>
       </div>
     </div>
   );
